@@ -1,0 +1,4 @@
+{
+	"name": "versemind dev container",
+	"dockerFile": "Dockerfile"
+}
