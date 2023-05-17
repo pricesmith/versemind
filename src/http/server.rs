@@ -1,4 +1,14 @@
-pub trait Server {
+use std::net::SocketAddr;
+use tower::make::Shared;
+
+use hyper::{service::service_fn, Body, Client, Request, Response, Server};
+
+// #[tokio:main]
+// fn main() {
+
+// }
+
+pub trait VersemindServer {
 
     // 
     fn up();
@@ -10,28 +20,53 @@ pub trait Server {
     fn log();
 }
 
-impl Server for Versemind {
+impl VersemindServer for Versemind {
+
+    async fn log(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+        let path = req.uri().path();
+    
+        if path.starts_with("/api") {
+            println!("API Path: {}", path);
+        } else {
+            println!("Generic Path: {}", path);
+        }
+    
+        handle(req).await
+    }
 
     // 
-    fn up() {
+    async fn handle(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+        let client = Client::new();
+        client.request(req).await
+    }
+
+    // 
+    async pub fn up() {
+        let make_service = Shared::new(service_fn(log));
+
+        let addr = SocketAddr(from([127,0,1], 8000));
+        let server = Server::bind(&addr).serve(make_service);
+
+        if let Err(e) = server.await {
+            println!("error: ", e)
+        }
+    };
+
+    // 
+    pub fn down() {
 
     };
 
     // 
-    fn down() {
+    // 
+
+    // 
+    pub fn uptime() {
 
     };
 
     // 
-    // 
-
-    // 
-    fn uptime() {
-
-    };
-
-    // 
-    fn sleep() {
+    pub fn sleep() {
 
     };
 }
